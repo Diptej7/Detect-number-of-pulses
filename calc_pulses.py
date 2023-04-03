@@ -1,7 +1,28 @@
 import torch
 import numpy as np
 from sklearn.mixture import GaussianMixture
+import torch
+import torch.nn as nn
 
+# Define autoencoder model
+class Autoencoder(nn.Module):
+    def __init__(self, input_size, hidden_size):
+        super().__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU()
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(hidden_size, input_size),
+            nn.Sigmoid()
+        )
+        
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return decoded
+
+# Define pulse detection class
 class PulseDetector:
     def __init__(self, data, num_components=2):
         self.data = data
