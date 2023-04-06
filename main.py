@@ -9,12 +9,16 @@ import torch
 df = pd.read_csv('data_signal.csv')
 data = df['_value'].values
 
+
+#df.plot()
+#plt.show()
+
 spectral_gating = data_preprocessingSG.SpectralGating()
 
 
 filtered_data_SG = spectral_gating(data)
 filtered_data_SG = filtered_data_SG[:len(data)]
-print(len(filtered_data_SG))
+#print(len(filtered_data_SG))
 
 df_filtered_SG = pd.DataFrame({'_time': df['_time'], '_value': filtered_data_SG})
 #df_filtered_SG.plot()
@@ -35,38 +39,34 @@ filter = data_preprocessingSG.ButterworthFilter(cutoff_freq, sampling_rate)
 
 # apply the filter to the '_value' column
 filtered_data = filter.filter(df['_value'])
+t = df['_time']
 
 df_filtered_BWF = pd.DataFrame({'_time': df['_time'], '_value': filtered_data})
 
 
-print(df_filtered_BWF)
+#print(df_filtered_BWF)
 
 
 # Calculate number of pulses
 
-pulse_detector = calc_pulses.PulseDetector(data)
-num_pulses = pulse_detector.detect()
-print("Number of pulses(unfiltered): ", num_pulses)
-
-pulse_detector1 = calc_pulses.PulseDetector(filtered_data_SG)
-num_pulses = pulse_detector1.detect()
+pulse_detector1 = calc_pulses.PulseDetector(filtered_data_SG,t)
+num_pulses = len(pulse_detector1.DetectPeaks())
 print("Number of pulses(spectral gating): ", num_pulses)
 
 
-pulse_detector2 = calc_pulses.PulseDetector(filtered_data)
-num_pulses = pulse_detector2.detect()
+pulse_detector2 = calc_pulses.PulseDetector(filtered_data,t)
+num_pulses = len(pulse_detector2.DetectPeaks())
 print("Number of pulses(butterworth filter): ", num_pulses)
 
+
+#peaks = pulse_detector1.DetectPeaks()
+#print(len(peaks))
 
 
 # Create a plot with both filtered signals
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.plot(df['_time'], filtered_data_SG, label='SpectralGating')
 ax.plot(df['_time'], filtered_data, label='ButterworthFilter')
-
-# Use pulse detector to detect pulses in the signal
-pulse_detector = calc_pulses.PulseDetector(filtered_data_SG)
-detected_num_pulses = pulse_detector.detect()
 
 # Add axis labels and a legend
 ax.set_xlabel('Time')
@@ -75,3 +75,7 @@ ax.legend()
 
 # Show the plot
 plt.show()
+
+
+
+
